@@ -22,27 +22,12 @@ class MyView1 extends PolymerElement {
     super();
     this.reset();
     this.removeEmployee = this.removeEmployee.bind(this);
-
-    this.addedName = "Anushree";
-    this.addedId = "dd";
-    this.addedDepartment = "UI";
-    this.addedSalary = 12345;
   }
 
   static get properties() {
     return {
       employee: { type: Array },
       add: {type: Boolean},
-      addedId: {
-        type: String,
-        reflectToAttribute: true,
-        notify: true
-      },
-      addedSalary: {
-        type: Number,
-        reflectToAttribute: true,
-        notify: true
-      }
     }
   }
   static get template() {
@@ -106,10 +91,10 @@ class MyView1 extends PolymerElement {
             <h2>Add an Employee</h2>
             <div>
               <paper-dialog-scrollable>
-                <paper-input always-float-label label="ID" value="{{addedId}}"></paper-input>
-                <paper-input always-float-label label="Name" value="{{addedName}}"></paper-input>
-                <paper-input always-float-label label="Department" value="{{addedDepartment}}"></paper-input>
-                <paper-input always-float-label label="Salary" value="[[addedSalary]]"></paper-input>
+                <paper-input always-float-label label="ID" id ="id" placeholder="Enter Id"></paper-input>
+                <paper-input always-float-label label="Name" id="name" placeholder="Enter Name"></paper-input>
+                <paper-input always-float-label label="Department" id="department" placeholder="Enter Department"></paper-input>
+                <paper-input always-float-label label="Salary" id="salary" placeholder="Enter Salary"></paper-input>
               </paper-dialog-scrollable>
             </div>
           <div class="buttons">
@@ -124,19 +109,26 @@ class MyView1 extends PolymerElement {
   }
 
  
+  clearInput(){
+    this.$.id.value=""
+    this.$.name.value=""
+    this.$.salary.value=""
+    this.$.department.value=""
+  }
 
   openDialog() {
     
     this.$.dia.open();
+    this.clearInput();
+    debugger;
    
   }
   addEmployee() {
-    debugger;
     var employee = {
-      name: this.addedName,
-      id: this.addedId,
-      department: this.addedDepartment,
-      salary: this.addedSalary
+      name: this.$.name.value,
+      id: this.$.id.value,
+      department: this.$.department.value,
+      salary: this.$.salary.value
     }
     this.push('employees', employee);
   }
