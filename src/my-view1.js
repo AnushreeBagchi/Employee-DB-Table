@@ -9,12 +9,16 @@
  */
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import { DomRepeat } from '@polymer/polymer/lib/elements/dom-repeat.js';
+import '@polymer/polymer/lib/elements/dom-repeat.js';
+import '@polymer/polymer/lib/elements/dom-module.js';
 import { DomIf } from '@polymer/polymer/lib/elements/dom-if';
 import  '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
+import '@polymer/iron-list/iron-list.js';
+
+
 import './shared-styles.js';
 
 class MyView1 extends PolymerElement {
@@ -23,6 +27,7 @@ class MyView1 extends PolymerElement {
     super();
     this.reset();
     this.removeEmployee = this.removeEmployee.bind(this);
+    this.deleteEntity = this.deleteEntity.bind(this);
     this.selectedArray=[];
     this.editIndex=undefined;
    
@@ -39,68 +44,67 @@ class MyView1 extends PolymerElement {
     return html`
       <style include="shared-styles">
        
+        
         :host {
           display: block;
-
-          padding: 10px;
         }
-        td,th{
-          border-bottom:1px solid #00000030;
-          padding: 20px;
-          
-        }
-        table{
-          width: 80%;
-          border-collapse: collapse;
-        }
+ 
         .add-popup{
           width: 40px;
           height: 40px;
           background-color: green;
         }
 
+        iron-list {
+          --iron-list-items-container: {
+             margin: auto;
+           };
+         }
+        
+         #row, #header{
+          display: grid;
+          grid-template-columns:0.3fr 1fr 1fr 1fr 1fr 1fr;
+          padding:20px;
+         }
+         #header{
+           font-weight: 700;
+         }
+         .col{
+           border-bottom: 1px solid #00000036;
+           
+         }
+
+
       </style>
 
       <div class="card">
         <div class="circle">1</div>
         <h1>Employee Database Table</h1>
-
-
-        <iron-list items="[[data]]" as="item">
-           <template>
-            <div tabindex$="[[tabIndex]]">
-                   Name: [[item.name]]
-            </div>
-           </template>
-        </iron-list>        
-
-        <table>
-            <thead>
-                <th></th>
-                <th>Employee Id</th>
-                <th>Employee Name</th>
-                <th>Department</th>
-                <th>Salary</th>
-                <th></th>
-                
-            </thead>
-            <tbody>
-            <template is="dom-repeat" items="[[employees]]">
-            
-            <tr>
-                    <td><paper-checkbox on-click='selectedEmployee'></paper-checkbox></td>
-                    <td>{{item.id}}</td>
-                    <td>{{item.name}}</td>
-                    <td>{{item.department}}</td>
-                    <td>{{item.salary}}</td>
-                    <td><paper-button raised on-click='openDialogEdit' id='editBtn'>Edit</paper-button></td>
-                    
-                </tr>
-            
-            
-            </template>     
-            </tbody>
-        </table>
+        
+          <div id='header'>
+              <div ></div>
+              <div >Employee Id</div>
+              <div >Employee Name</div>
+              <div >Department</div>
+              <div >Salary</div>
+              <div ></div>            
+          </div>
+        
+        <iron-list is="dom-repeat" items="[[employees]]">
+        <template>
+          <div id='row'>
+            <div class='col'><paper-checkbox on-click='selectedEmployee'></paper-checkbox></div>
+            <div class='col' id='id'>{{item.id}}</div>
+            <div class='col' id='name'>{{item.name}}</div>
+            <div class='col' id='department'>{{item.department}}</div>
+            <div class='col' id='salary'>{{item.salary}}</div>
+            <div class='col' ><paper-button raised on-click='openDialogEdit' id='editBtn'>Edit</paper-button></div>            
+          </div>
+        </template>
+      </iron-list>
+    
+   
+        
         <hr/>
         <paper-button raised on-click='openDialogAdd'>Add</paper-button>        
         <paper-button raised on-click='deleteEntity' id='deleteBtn'>Delete</paper-button>
@@ -142,23 +146,24 @@ class MyView1 extends PolymerElement {
   }
 
   deleteEntity(){
-  console.log("delete btn clicked");
-   
-   let employees = [];
-   for(var j=0;j<this.selectedArray.length;j++){
-    for (let i = 0; i < this.employees.length; i++) {
-      if (this.employees[i].id != this.selectedArray[j]) {
-        employees.push(this.employees[i])
-      }
-    }
+  debugger;
+  let sel_arr=this.selectedArray;
+  if(sel_arr.length!=0){
+    let employees = [];
+    // for(var j=0;j<this.selectedArray.length;j++){
+    //  for (let i = 0; i < this.employees.length; i++) {
+    //    if (this.employees[i].id != this.selectedArray[j]) {
+    //      employees.push(this.employees[i])
+    //    }
+    //  }
+    // }
+    this.employees = this.employees.filter(function(x) {
+      debugger;
+      let inc=sel_arr.includes(x.id)
+      return !inc; 
+    })
+   this.clearCheckboxes();
    }
-
-   this.employees = employees;
-
-  console.log(this.employees);
-  this.clearCheckboxes();
-   debugger;
-    
   }
 
   clearCheckboxes(){
@@ -194,7 +199,8 @@ class MyView1 extends PolymerElement {
     console.log(this.selectedArray);
   }
 
-  addEmployee() {    
+  addEmployee() {  
+    debugger  
     let employee = {
       name: this.$.name.value,
       id: this.$.id.value,
