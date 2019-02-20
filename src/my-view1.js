@@ -14,6 +14,7 @@ import { DomIf } from '@polymer/polymer/lib/elements/dom-if';
 import  '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-input/paper-input.js';
+import '@polymer/paper-checkbox/paper-checkbox.js';
 import './shared-styles.js';
 
 class MyView1 extends PolymerElement {
@@ -22,12 +23,16 @@ class MyView1 extends PolymerElement {
     super();
     this.reset();
     this.removeEmployee = this.removeEmployee.bind(this);
+    this.selectedArray=[];
+    this.editIndex=undefined;
+   
   }
 
   static get properties() {
     return {
       employee: { type: Array },
       add: {type: Boolean},
+      selectedArray:{type:Array}
     }
   }
   static get template() {
@@ -40,7 +45,8 @@ class MyView1 extends PolymerElement {
           padding: 10px;
         }
         td,th{
-          border:1px solid black;
+          border-bottom:1px solid #00000030;
+          padding: 20px;
           
         }
         table{
@@ -58,27 +64,37 @@ class MyView1 extends PolymerElement {
       <div class="card">
         <div class="circle">1</div>
         <h1>Employee Database Table</h1>
-        
-        
+
+
+        <iron-list items="[[data]]" as="item">
+           <template>
+            <div tabindex$="[[tabIndex]]">
+                   Name: [[item.name]]
+            </div>
+           </template>
+        </iron-list>        
+
         <table>
             <thead>
+                <th></th>
                 <th>Employee Id</th>
                 <th>Employee Name</th>
                 <th>Department</th>
                 <th>Salary</th>
                 <th></th>
-                <th></th>
+                
             </thead>
             <tbody>
             <template is="dom-repeat" items="[[employees]]">
             
             <tr>
+                    <td><paper-checkbox on-click='selectedEmployee'></paper-checkbox></td>
                     <td>{{item.id}}</td>
                     <td>{{item.name}}</td>
                     <td>{{item.department}}</td>
                     <td>{{item.salary}}</td>
-                    <td><a href='#'>Edit</a></td>
-                    <td><a href='#' on-click='removeEmployee'>Delete</a></td>
+                    <td><paper-button raised on-click='openDialogEdit' id='editBtn'>Edit</paper-button></td>
+                    
                 </tr>
             
             
@@ -86,8 +102,10 @@ class MyView1 extends PolymerElement {
             </tbody>
         </table>
         <hr/>
-        <paper-button raised on-click='openDialog'>Add</paper-button>
-        <paper-dialog id="dia">
+        <paper-button raised on-click='openDialogAdd'>Add</paper-button>        
+        <paper-button raised on-click='deleteEntity' id='deleteBtn'>Delete</paper-button>
+
+        <paper-dialog id="diaAdd">
             <h2>Add an Employee</h2>
             <div>
               <paper-dialog-scrollable>
@@ -103,12 +121,53 @@ class MyView1 extends PolymerElement {
         </div>
       </paper-dialog>
 
+      <paper-dialog id="diaEdit">
+            <h2>Edit Employee Data</h2>
+            <div>
+              <paper-dialog-scrollable>
+                <paper-input always-float-label label="ID" id ="editId" placeholder="Enter Id"></paper-input>
+                <paper-input always-float-label label="Name" id="editName" placeholder="Enter Name"></paper-input>
+                <paper-input always-float-label label="Department" id="editDepartment" placeholder="Enter Department"></paper-input>
+                <paper-input always-float-label label="Salary" id="editSalary" placeholder="Enter Salary"></paper-input>
+              </paper-dialog-scrollable>
+            </div>
+          <div class="buttons">
+            <paper-button dialog-dismiss>Cancel</paper-button>
+             <paper-button dialog-confirm autofocus on-click="editEmployee">Accept</paper-button>
+        </div>
+      </paper-dialog>
     
       </div>
     `;
   }
 
- 
+  deleteEntity(){
+  console.log("delete btn clicked");
+   
+   let employees = [];
+   for(var j=0;j<this.selectedArray.length;j++){
+    for (let i = 0; i < this.employees.length; i++) {
+      if (this.employees[i].id != this.selectedArray[j]) {
+        employees.push(this.employees[i])
+      }
+    }
+   }
+
+   this.employees = employees;
+
+  console.log(this.employees);
+  this.clearCheckboxes();
+   debugger;
+    
+  }
+
+  clearCheckboxes(){
+    let checkboxes=this.shadowRoot.querySelectorAll('paper-checkbox');
+    for (let i=0;i<checkboxes.length;i++){
+      checkboxes[i].checked=false;
+    }
+    this.selectedArray=[];  
+  }
   clearInput(){
     this.$.id.value=""
     this.$.name.value=""
@@ -116,15 +175,27 @@ class MyView1 extends PolymerElement {
     this.$.department.value=""
   }
 
-  openDialog() {
+  openDialogAdd() {
     
-    this.$.dia.open();
-    this.clearInput();
-    debugger;
-   
+    this.$.diaAdd.open();
+    this.clearInput();   
   }
-  addEmployee() {
-    var employee = {
+
+  openDialogEdit(event) {
+    this.$.diaEdit.open();
+    this.clearInput();   
+    this.editIndex=this.findIndex(event);
+    console.log(this.editIndex);
+  }
+
+  selectedEmployee(event){   
+    let selectedid =event.model.item.id;
+    this.push("selectedArray",selectedid);
+    console.log(this.selectedArray);
+  }
+
+  addEmployee() {    
+    let employee = {
       name: this.$.name.value,
       id: this.$.id.value,
       department: this.$.department.value,
@@ -133,15 +204,37 @@ class MyView1 extends PolymerElement {
     this.push('employees', employee);
   }
 
-  removeEmployee(event) {
-    var deleted_id = event.model.item.id;
+  findIndex(event){
+    let id = event.model.item.id;
+    let index = this.employees.map(x => {
+      return x.id;
+    }).indexOf(id);
+    return index;
+  }
 
-    var index = this.employees.map(x => {
+  editEmployee(event){    
+      let employee = {
+        name: this.$.editName.value,
+        id: this.$.editId.value,
+        department: this.$.editDepartment.value,
+        salary: this.$.editSalary.value
+      }     
+    this.employees[this.editIndex]=employee;   
+    console.log(this.employees);
+    //  for (let i = 0; i < this.employees.length; i++) {
+    //   if (this.employees[i].id != deleted_id) {
+    //     employees.push(this.employees[i])
+    //   }
+    // }        
+
+  }
+
+  removeEmployee(event) {
+    let deleted_id = event.model.item.id;
+    let index = this.employees.map(x => {
       return x.id;
     }).indexOf(deleted_id);
 
-    console.log(index);
-    debugger;
     let employees = [];
     for (let i = 0; i < this.employees.length; i++) {
       if (this.employees[i].id != deleted_id) {
