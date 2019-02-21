@@ -37,7 +37,11 @@ class MyView1 extends PolymerElement {
     return {
       employee: { type: Array },
       add: {type: Boolean},
-      selectedArray:{type:Array}
+      selectedArray:{type:Array},
+      employees:{
+        type: Array
+      }
+
     }
   }
   static get template() {
@@ -47,12 +51,6 @@ class MyView1 extends PolymerElement {
         
         :host {
           display: block;
-        }
- 
-        .add-popup{
-          width: 40px;
-          height: 40px;
-          background-color: green;
         }
 
         iron-list {
@@ -90,7 +88,7 @@ class MyView1 extends PolymerElement {
               <div ></div>            
           </div>
         
-        <iron-list is="dom-repeat" items="[[employees]]">
+        <iron-list is="dom-repeat" items="{{employees}}">
         <template>
           <div id='row'>
             <div class='col'><paper-checkbox on-click='selectedEmployee'></paper-checkbox></div>
@@ -157,11 +155,14 @@ class MyView1 extends PolymerElement {
     //    }
     //  }
     // }
-    this.employees = this.employees.filter(function(x) {
+    employees = this.employees.filter(function(x) {
       debugger;
       let inc=sel_arr.includes(x.id)
       return !inc; 
     })
+   
+    this.employees=employees;
+    console.log(this.employees);
    this.clearCheckboxes();
    }
   }
