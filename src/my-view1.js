@@ -18,6 +18,7 @@ import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/iron-list/iron-list.js';
 import '@polymer/iron-ajax/iron-ajax.js';
+import '@polymer/iron-form/iron-form.js';
 
 
 import './shared-styles.js';
@@ -26,11 +27,10 @@ class MyView1 extends PolymerElement {
 
   constructor() {
     super();
-    
-    this.removeEmployee = this.removeEmployee.bind(this);
     this.deleteEntity = this.deleteEntity.bind(this);
     this.selectedArray=[];
     this.editIndex=undefined;
+    
    
   }
 
@@ -41,7 +41,8 @@ class MyView1 extends PolymerElement {
       selectedArray:{type:Array},
       employees:{
         type: Array
-      }
+      },
+      CurrentRecordId:{type: Number}
 
     }
   }
@@ -102,7 +103,6 @@ class MyView1 extends PolymerElement {
         .heading{
           display : flex;
           justify-content: space-between;
-          
           background: -moz-linear-gradient(left, #e2e2e2 0%, #fefefe 100%); /* FF3.6-15 */
           background: -webkit-linear-gradient(left, #e2e2e2 0%,#fefefe 100%); /* Chrome10-25,Safari5.1-6 */
           background: linear-gradient(to right, #e2e2e2 0%,#fefefe 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
@@ -112,8 +112,6 @@ class MyView1 extends PolymerElement {
         div[hidden]{
           display: none !important;
         }
-
-        
 
       </style>
       
@@ -129,7 +127,7 @@ class MyView1 extends PolymerElement {
 
 
       <div class="card">
-        <div class="circle">1</div>
+       
         <div class='heading'>
             <h1>Employee Database Table</h1>
             <div>
@@ -161,40 +159,44 @@ class MyView1 extends PolymerElement {
           </div>
         </template>
       </iron-list>
- 
 
-        <paper-dialog id="diaAdd">
-            <h2>Add an Employee</h2>
-            <div>
-              <paper-dialog-scrollable>              
-                <paper-input always-float-label label="ID" id ="id" on-change="idCheck" placeholder="Enter Id" auto-validate pattern="[0-9]*" error-message="Invalid Id"  ></paper-input>
-                <paper-input always-float-label label="Name" id="name" placeholder="Enter Name"></paper-input>
-                <paper-input always-float-label label="Department" id="department" placeholder="Enter Department"></paper-input>
-                <paper-input always-float-label label="Salary" id="salary" auto-validate pattern="[0-9]*" error-message="Invalid Salary" placeholder="Enter Salary"></paper-input>
-              </paper-dialog-scrollable>
-            </div>
-          <div class="buttons">
+      <paper-dialog id="diaAdd">
+        <iron-form id='addIronForm'>
+        <h2>Add an Employee</h2>
+            <form >
+                <paper-dialog-scrollable>              
+                    <paper-input always-float-label label="ID" id ="id"  auto-validate pattern="[0-9]*" error-message="Invalid Id" placeholder="Enter Id"></paper-input>
+                    <paper-input always-float-label label="Name" id="name" placeholder="Enter Name"></paper-input>
+                    <paper-input always-float-label label="Department" id="department" placeholder="Enter Department"></paper-input>
+                    <paper-input always-float-label label="Salary" id="salary"  auto-validate pattern="[0-9]*" error-message="Invalid Salary" placeholder="Enter Salary"></paper-input>
+                </paper-dialog-scrollable>
+            </form>
+        </iron-form>
+
+        <div class="buttons">
             <paper-button dialog-dismiss>Cancel</paper-button>
-             <paper-button dialog-confirm autofocus on-click="addEmployee">Accept</paper-button>
+            <paper-button dialog-confirm autofocus on-click="addEmployee">Accept</paper-button>
         </div>
       </paper-dialog>
 
       <paper-dialog id="diaEdit">
-            <h2>Edit Employee Data</h2>
-            <div>
-              <paper-dialog-scrollable>
-                <paper-input always-float-label label="ID" id ="editId"   on-change="idCheck"  auto-validate pattern="[0-9]" error-message="Invalid Id" placeholder="Enter Id" ></paper-input>
-                <paper-input always-float-label label="Name" id="editName" placeholder="Enter Name"  ></paper-input>
-                <paper-input always-float-label label="Department" id="editDepartment" placeholder="Enter Department"  ></paper-input>
-                <paper-input always-float-label label="Salary" id="editSalary"  auto-validate pattern="[0-9]*" error-message="Invalid Salary"  placeholder="Enter Salary" ></paper-input>
-              </paper-dialog-scrollable>
-            </div>
-          <div class="buttons">
+        <iron-form id='editIronForm'>
+        <h2>Edit Employee Data</h2>
+            <form >
+                <paper-dialog-scrollable>              
+                    <paper-input always-float-label label="ID" id ="editId"   value="{{CurrentRecordId}}" readonly></paper-input>
+                    <paper-input always-float-label label="Name" id="editName" placeholder="Enter Name"></paper-input>
+                    <paper-input always-float-label label="Department" id="editDepartment" placeholder="Enter Department"></paper-input>
+                    <paper-input always-float-label label="Salary" id="editSalary"  auto-validate pattern="[0-9]*" error-message="Invalid Salary" placeholder="Enter Salary"></paper-input>
+                </paper-dialog-scrollable>
+            </form>
+        </iron-form>
+
+        <div class="buttons">
             <paper-button dialog-dismiss>Cancel</paper-button>
-             <paper-button dialog-confirm id="accept" autofocus on-click="editEmployee" on-tap='confirmClick'>Accept</paper-button>
+            <paper-button dialog-confirm autofocus on-click="editEmployee">Accept</paper-button>
         </div>
       </paper-dialog>
-    
       </div>
     `;
   }
@@ -203,52 +205,8 @@ class MyView1 extends PolymerElement {
   handleResponse(e){    
     const resp = e.detail.response;
     this.employees=resp.members;
-  }
-
-  deleteEntity(){
-  let sel_arr=this.selectedArray;
-  let employees = [];
-  if(sel_arr.length!=0){
-    employees = this.employees.filter(function(x) {
-      debugger;
-      let inc=sel_arr.includes(x.id)
-      return !inc; 
-    })
-   
-    this.set('employees', employees);
-    console.log(this.employees);
-    this.clearCheckboxes();
-   }
-  }
-
-  confirmClick() {
-    debugger;
-    // var validated = true;
-    var inputsId = this.$.id; // select all required inputs
     
-      if(!inputsId.validate()) {
-        validated = false; // input validation failed and will stop submit 
-      }
-  
-    if(validated) {
-      this.$.form.submit(); // manually submit the form
-    }
   }
-
-  idCheck(abc){
-    var validate=true;
-    debugger;
-    let input_value= this.$.id.value;
-    let isNumber= isNaN(input_value);
-    if(!input_value){
-      validate=false;
-    }
-    return validate;
-  }
-
- 
-
-
 
   clearCheckboxes(){
     let checkboxes=this.shadowRoot.querySelectorAll('paper-checkbox');
@@ -257,6 +215,7 @@ class MyView1 extends PolymerElement {
     }
     this.selectedArray=[];  
   }
+
   clearInput(){
     this.$.id.value=""
     this.$.name.value=""
@@ -269,21 +228,13 @@ class MyView1 extends PolymerElement {
     this.clearInput();   
   }
 
-  openDialogEdit(event) {
-    this.$.diaEdit.open();
-    this.clearInput();   
-    this.editIndex=this.findIndex(event);
-    console.log(this.editIndex);
-  }
-
-  selectedEmployee(event){   
-    let selectedid =event.model.item.id;
-    this.push("selectedArray",selectedid);
-    console.log(this.selectedArray);
-  }
-
   addEmployee() {  
-    
+    //to validate the input data
+    let validateInput=this.$.addIronForm.validate();
+    if(!validateInput){
+      return window.alert('Invalid input data. Try again!!');
+    }
+
     let employee = {
       name: this.$.name.value,
       id: this.$.id.value,
@@ -301,7 +252,21 @@ class MyView1 extends PolymerElement {
     return index;
   }
 
+  openDialogEdit(event) {
+    this.$.diaEdit.open();   
+    this.editIndex=this.findIndex(event);
+    console.log(this.editIndex);
+    this.CurrentRecordId=this.employees[this.editIndex].id;
+    
+  }
+
   editEmployee(event){        
+    let validateInput=this.$.editIronForm.validate();
+    if(!validateInput){
+      this.clearInput();
+      return window.alert('Invalid input data. Try again!!');
+    }
+
     let employees=[];
     let employee = {
       name: this.$.editName.value,
@@ -314,42 +279,29 @@ class MyView1 extends PolymerElement {
     employees.splice(this.editIndex,1);
     employees.splice(this.editIndex, 0, employee);
     this.set('employees', employees);
-    //this.employees = employees
-    
-  
+    //this.employees = employees 
   }
-  removeEmployee(event) {
-    let deleted_id = event.model.item.id;
-    let index = this.employees.map(x => {
-      return x.id;
-    }).indexOf(deleted_id);
 
+  selectedEmployee(event){   
+    let selectedid =event.model.item.id;
+    this.push("selectedArray",selectedid);
+    console.log(this.selectedArray);
+  }
+
+  deleteEntity(){
+    let sel_arr=this.selectedArray;
     let employees = [];
-    for (let i = 0; i < this.employees.length; i++) {
-      if (this.employees[i].id != deleted_id) {
-        employees.push(this.employees[i])
-      }
+    if(sel_arr.length!=0){
+      employees = this.employees.filter(function(x) {
+        let inc=sel_arr.includes(x.id)
+        return !inc; 
+      })
+     
+      this.set('employees', employees);
+      console.log(this.employees);
+      this.clearCheckboxes();
+     }
     }
-
-    this.employees = employees;
-    console.log(this.employees);
-  }
-
-  // reset() {
-  //   this.employees = [{
-  //     name: 'Anushree',
-  //     id: 12345,
-  //     department: 'UI',
-  //     salary: 12345
-  //   },
-  //   {
-  //     name: 'Anushree1',
-  //     id: 12346,
-  //     department: 'UI',
-  //     salary: 12346
-  //   }]
-  // }
-
 }
 
 window.customElements.define('my-view1', MyView1);
