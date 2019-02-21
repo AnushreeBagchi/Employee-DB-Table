@@ -57,19 +57,43 @@ class MyView1 extends PolymerElement {
           --iron-list-items-container: {
              margin: auto;
            };
+           magin-bottom: 20px;
+           background-color: light-grey;
          }
         
          #row, #header{
-          display: grid;
-          grid-template-columns:0.3fr 1fr 1fr 1fr 1fr 1fr;
+          display: flex;
           padding:20px;
+          -webkit-box-shadow: 4px 4px 10px -8px rgba(0,0,0,0.75);
+          -moz-box-shadow: 4px 4px 10px -8px rgba(0,0,0,0.75);
+          box-shadow: 4px 4px 10px -8px rgba(0,0,0,0.75);
+
          }
          #header{
            font-weight: 700;
          }
-         .col{
-           border-bottom: 1px solid #00000036;
+
+         #row:hover{
+          
+         }
+
+         #editBtn{
+          height: 2em;
+         }
+
+         h1{
+           position:relative;
+           left : 30%;
+           color:#212121a8;
            
+         }
+         .col{
+          width: 20%;
+
+         }
+
+         .checkbox{
+           width: 5%;
          }
 
 
@@ -80,18 +104,18 @@ class MyView1 extends PolymerElement {
         <h1>Employee Database Table</h1>
         
           <div id='header'>
-              <div ></div>
-              <div >Employee Id</div>
-              <div >Employee Name</div>
-              <div >Department</div>
-              <div >Salary</div>
-              <div ></div>            
+              <div class='checkbox''></div>
+              <div class='col' >Employee Id</div>
+              <div class='col'>Employee Name</div>
+              <div class='col'>Department</div>
+              <div class='col'>Salary</div>
+              <div class='col'></div>            
           </div>
         
-        <iron-list is="dom-repeat" items="{{employees}}">
+        <iron-list items="{{employees}}" as="item">
         <template>
           <div id='row'>
-            <div class='col'><paper-checkbox on-click='selectedEmployee'></paper-checkbox></div>
+            <div class='checkbox'><paper-checkbox on-click='selectedEmployee'></paper-checkbox></div>
             <div class='col' id='id'>{{item.id}}</div>
             <div class='col' id='name'>{{item.name}}</div>
             <div class='col' id='department'>{{item.department}}</div>
@@ -103,7 +127,7 @@ class MyView1 extends PolymerElement {
     
    
         
-        <hr/>
+       
         <paper-button raised on-click='openDialogAdd'>Add</paper-button>        
         <paper-button raised on-click='deleteEntity' id='deleteBtn'>Delete</paper-button>
 
@@ -111,10 +135,11 @@ class MyView1 extends PolymerElement {
             <h2>Add an Employee</h2>
             <div>
               <paper-dialog-scrollable>
-                <paper-input always-float-label label="ID" id ="id" placeholder="Enter Id"></paper-input>
+              
+                <paper-input always-float-label label="ID" id ="id" placeholder="Enter Id" auto-validate pattern="[0-9]*" error-message="Invalid Id"  ></paper-input>
                 <paper-input always-float-label label="Name" id="name" placeholder="Enter Name"></paper-input>
                 <paper-input always-float-label label="Department" id="department" placeholder="Enter Department"></paper-input>
-                <paper-input always-float-label label="Salary" id="salary" placeholder="Enter Salary"></paper-input>
+                <paper-input always-float-label label="Salary" id="salary" auto-validate pattern="[0-9]*" error-message="Invalid Salary" placeholder="Enter Salary"></paper-input>
               </paper-dialog-scrollable>
             </div>
           <div class="buttons">
@@ -127,10 +152,10 @@ class MyView1 extends PolymerElement {
             <h2>Edit Employee Data</h2>
             <div>
               <paper-dialog-scrollable>
-                <paper-input always-float-label label="ID" id ="editId" placeholder="Enter Id"></paper-input>
+                <paper-input always-float-label label="ID" id ="editId"  auto-validate pattern="[0-9]*" error-message="Invalid Id" placeholder="Enter Id"></paper-input>
                 <paper-input always-float-label label="Name" id="editName" placeholder="Enter Name"></paper-input>
                 <paper-input always-float-label label="Department" id="editDepartment" placeholder="Enter Department"></paper-input>
-                <paper-input always-float-label label="Salary" id="editSalary" placeholder="Enter Salary"></paper-input>
+                <paper-input always-float-label label="Salary" id="editSalary"  auto-validate pattern="[0-9]*" error-message="Invalid Salary"  placeholder="Enter Salary"></paper-input>
               </paper-dialog-scrollable>
             </div>
           <div class="buttons">
@@ -146,25 +171,22 @@ class MyView1 extends PolymerElement {
   deleteEntity(){
   debugger;
   let sel_arr=this.selectedArray;
+  let employees = [];
   if(sel_arr.length!=0){
-    let employees = [];
-    // for(var j=0;j<this.selectedArray.length;j++){
-    //  for (let i = 0; i < this.employees.length; i++) {
-    //    if (this.employees[i].id != this.selectedArray[j]) {
-    //      employees.push(this.employees[i])
-    //    }
-    //  }
-    // }
     employees = this.employees.filter(function(x) {
       debugger;
       let inc=sel_arr.includes(x.id)
       return !inc; 
     })
    
-    this.employees=employees;
+    this.set('employees', employees);
     console.log(this.employees);
-   this.clearCheckboxes();
+    // this.clearCheckboxes();
    }
+  }
+
+  validate_1(){
+    console.log("inside validation");
   }
 
   clearCheckboxes(){
@@ -201,7 +223,7 @@ class MyView1 extends PolymerElement {
   }
 
   addEmployee() {  
-    debugger  
+    
     let employee = {
       name: this.$.name.value,
       id: this.$.id.value,
@@ -220,22 +242,25 @@ class MyView1 extends PolymerElement {
   }
 
   editEmployee(event){    
-      let employee = {
-        name: this.$.editName.value,
-        id: this.$.editId.value,
-        department: this.$.editDepartment.value,
-        salary: this.$.editSalary.value
-      }     
-    this.employees[this.editIndex]=employee;   
-    console.log(this.employees);
-    //  for (let i = 0; i < this.employees.length; i++) {
-    //   if (this.employees[i].id != deleted_id) {
-    //     employees.push(this.employees[i])
-    //   }
-    // }        
+    debugger  ;
+    
+    let employees=[];
 
+    let employee = {
+      name: this.$.editName.value,
+      id: this.$.editId.value,
+      department: this.$.editDepartment.value,
+      salary: this.$.editSalary.value
+    };     
+    debugger;      
+    employees = [...this.employees];
+    employees.splice(this.editIndex,1);
+    employees.splice(this.editIndex, 0, employee);
+    this.set('employees', employees);
+    //this.employees = employees
+    
+  
   }
-
   removeEmployee(event) {
     let deleted_id = event.model.item.id;
     let index = this.employees.map(x => {
