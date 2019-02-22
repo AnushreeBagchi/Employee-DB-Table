@@ -42,16 +42,13 @@ class MyView1 extends PolymerElement {
       employees:{
         type: Array
       },
-      CurrentRecordId:{type: Number}
+      CurrentRecord:{type: Object}
 
     }
   }
   static get template() {
     return html`
       <style include="shared-styles">
-       
-        
-       
 
         iron-list {
           --iron-list-items-container: {
@@ -115,7 +112,6 @@ class MyView1 extends PolymerElement {
 
       </style>
       
-
       <iron-ajax
           auto
           url="https://api.myjson.com/bins/ljvga"
@@ -165,7 +161,7 @@ class MyView1 extends PolymerElement {
         <h2>Add an Employee</h2>
             <form >
                 <paper-dialog-scrollable>              
-                    <paper-input always-float-label label="ID" id ="id"  auto-validate pattern="[0-9]*" error-message="Invalid Id" placeholder="Enter Id"></paper-input>
+                    <paper-input always-float-label label="ID" id ="id"  placeholder="Enter Id" required></paper-input>
                     <paper-input always-float-label label="Name" id="name" placeholder="Enter Name"></paper-input>
                     <paper-input always-float-label label="Department" id="department" placeholder="Enter Department"></paper-input>
                     <paper-input always-float-label label="Salary" id="salary"  auto-validate pattern="[0-9]*" error-message="Invalid Salary" placeholder="Enter Salary"></paper-input>
@@ -184,10 +180,10 @@ class MyView1 extends PolymerElement {
         <h2>Edit Employee Data</h2>
             <form >
                 <paper-dialog-scrollable>              
-                    <paper-input always-float-label label="ID" id ="editId"   value="{{CurrentRecordId}}" readonly></paper-input>
-                    <paper-input always-float-label label="Name" id="editName" placeholder="Enter Name"></paper-input>
-                    <paper-input always-float-label label="Department" id="editDepartment" placeholder="Enter Department"></paper-input>
-                    <paper-input always-float-label label="Salary" id="editSalary"  auto-validate pattern="[0-9]*" error-message="Invalid Salary" placeholder="Enter Salary"></paper-input>
+                    <paper-input always-float-label label="ID" id ="editId"   value="{{CurrentRecord.id}}" readonly></paper-input>
+                    <paper-input always-float-label label="Name" id="editName" placeholder="Enter Name"  value="{{CurrentRecord.name}}"></paper-input>
+                    <paper-input always-float-label label="Department" id="editDepartment" placeholder="Enter Department"  value="{{CurrentRecord.department}}"></paper-input>
+                    <paper-input always-float-label label="Salary" id="editSalary"  value="{{CurrentRecord.salary}}" auto-validate pattern="[0-9]*" error-message="Invalid Salary" placeholder="Enter Salary"></paper-input>
                 </paper-dialog-scrollable>
             </form>
         </iron-form>
@@ -241,7 +237,9 @@ class MyView1 extends PolymerElement {
       department: this.$.department.value,
       salary: this.$.salary.value
     }
-    this.push('employees', employee);
+    this.unshift('employees', employee);
+    this.shadowRoot.querySelector('iron-list').fire('iron-resize');
+    debugger;
   }
 
   findIndex(event){
@@ -256,7 +254,13 @@ class MyView1 extends PolymerElement {
     this.$.diaEdit.open();   
     this.editIndex=this.findIndex(event);
     console.log(this.editIndex);
-    this.CurrentRecordId=this.employees[this.editIndex].id;
+    this.CurrentRecord={
+      id: this.employees[this.editIndex].id,
+      name: this.employees[this.editIndex].name,
+      department: this.employees[this.editIndex].department,
+      salary:this.employees[this.editIndex].salary
+    }
+    
     
   }
 
@@ -266,7 +270,7 @@ class MyView1 extends PolymerElement {
       this.clearInput();
       return window.alert('Invalid input data. Try again!!');
     }
-
+    this.clearInput();
     let employees=[];
     let employee = {
       name: this.$.editName.value,
