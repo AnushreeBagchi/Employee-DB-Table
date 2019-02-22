@@ -22,6 +22,7 @@
     "@polymer/iron-list": "^3.0.1",
     "@polymer/iron-media-query": "^3.0.0-pre.15",
     "@polymer/iron-pages": "^3.0.0-pre.15",
+    "@polymer/iron-scroll-threshold": "^3.0.1",
     "@polymer/iron-selector": "^3.0.0-pre.15",
     "@polymer/paper-button": "^3.0.1",
     "@polymer/paper-checkbox": "^3.1.0",

@@ -19,6 +19,7 @@ import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/iron-list/iron-list.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-form/iron-form.js';
+import '@polymer/iron-scroll-threshold/iron-scroll-threshold.js';
 
 
 import './shared-styles.js';
@@ -29,9 +30,7 @@ class MyView1 extends PolymerElement {
     super();
     this.deleteEntity = this.deleteEntity.bind(this);
     this.selectedArray=[];
-    this.editIndex=undefined;
-    
-   
+    this.editIndex=undefined;   
   }
 
   static get properties() {
@@ -112,14 +111,7 @@ class MyView1 extends PolymerElement {
 
       </style>
       
-      <iron-ajax
-          auto
-          url="https://api.myjson.com/bins/ljvga"
-          params='{"part":"snippet", "q":"polymer", "key": "YOUTUBE_API_KEY", "type": "video"}'
-          handle-as="json"
-          on-response=handleResponse
-          debounce-duration="300">
-      </iron-ajax>
+      
 
 
       <div class="card">
@@ -142,19 +134,21 @@ class MyView1 extends PolymerElement {
               <div class='col'></div>            
           </div>
         
-        <iron-list items="{{employees}}" as="item">
-        <template>
-          <div id='row'>
-            <div class='checkbox'><paper-checkbox on-click='selectedEmployee'></paper-checkbox></div>
-            <div class='sr' id='id'>{{index}}</div>
-            <div class='col' id='name'>{{item.id}}</div>
-            <div class='col' id='name'>{{item.name}}</div>
-            <div class='col' id='department'>{{item.department}}</div>
-            <div class='col' id='salary'>{{item.salary}}</div>
-            <div class='col' ><paper-button raised on-click='openDialogEdit' id='editBtn'>Edit</paper-button></div>            
-          </div>
-        </template>
-      </iron-list>
+        <iron-scroll-threshold id="ironScrollTheshold" on-lower-threshold="loadMoreData">
+            <iron-list items="{{employees}}" as="item">
+            <template>
+              <div id='row'>
+                <div class='checkbox'><paper-checkbox on-click='selectedEmployee'></paper-checkbox></div>
+                <div class='sr' id='id'>{{index}}</div>
+                <div class='col' id='name'>{{item.id}}</div>
+                <div class='col' id='name'>{{item.name}}</div>
+                <div class='col' id='department'>{{item.department}}</div>
+                <div class='col' id='salary'>{{item.salary}}</div>
+                <div class='col' ><paper-button raised on-click='openDialogEdit' id='editBtn'>Edit</paper-button></div>            
+              </div>
+            </template>
+          </iron-list>
+        </iron-scroll-threshold>
 
       <paper-dialog id="diaAdd">
         <iron-form id='addIronForm'>
@@ -193,15 +187,26 @@ class MyView1 extends PolymerElement {
             <paper-button dialog-confirm autofocus on-click="editEmployee">Accept</paper-button>
         </div>
       </paper-dialog>
-      </div>
+      </div>      
+
     `;
   }
 
+  loadMoreData(){
+    console.log('lower threshold triggered');
+    var self = this;
+    fetch('https://api.myjson.com/bins/ljvga/?members=10').then((response)=>{
+      return response.json()
+    }).then((result)=>{      
+      self.employees = result.members;
+      // console.log(self.employees);
+    })
 
-  handleResponse(e){    
-    const resp = e.detail.response;
-    this.employees=resp.members;
-    
+    // console.log(self.employees);
+    setTimeout(() => {
+      self.$.ironScrollTheshold.clearTriggers();
+    });
+
   }
 
   clearCheckboxes(){
