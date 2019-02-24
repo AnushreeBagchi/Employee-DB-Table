@@ -30,7 +30,8 @@ class MyView1 extends PolymerElement {
     super();
     this.deleteEntity = this.deleteEntity.bind(this);
     this.selectedArray=[];
-    this.editIndex=undefined;   
+    this.editIndex=undefined;
+    this.lastIndexUsed=-1;   
   }
 
   static get properties() {
@@ -55,6 +56,7 @@ class MyView1 extends PolymerElement {
            };
            magin-bottom: 20px;
            background-color: light-grey;
+           flex: 1 1 auto;
          }
         
          #row, #header{
@@ -135,7 +137,7 @@ class MyView1 extends PolymerElement {
           </div>
         
         <iron-scroll-threshold id="ironScrollTheshold" on-lower-threshold="loadMoreData">
-            <iron-list items="{{employees}}" as="item">
+            <iron-list items="{{employees}}" as="item" scroll-target="ironScrollTheshold">
             <template>
               <div id='row'>
                 <div class='checkbox'><paper-checkbox on-click='selectedEmployee'></paper-checkbox></div>
@@ -192,17 +194,28 @@ class MyView1 extends PolymerElement {
     `;
   }
 
+  generate_request(self){
+    //  'https://api.myjson.com/bins/ljvga/'
+    fetch('http://localhost:5500/api/v1/getMembers?lastIndex='+this.lastIndexUsed)
+        .then((response)=>{
+            return response.json()
+              }).then((result)=>{   
+                var records=result.data;                   
+                records.forEach(function(e) {
+                  self.push('employees', e);
+                });
+                this.lastIndexUsed+=5;
+
+                 
+      console.log(self.employees);
+    })
+  }
+
   loadMoreData(){
     console.log('lower threshold triggered');
     var self = this;
-    fetch('https://api.myjson.com/bins/ljvga/?members=10').then((response)=>{
-      return response.json()
-    }).then((result)=>{      
-      self.employees = result.members;
-      // console.log(self.employees);
-    })
-
-    // console.log(self.employees);
+    self.employees=[];   
+    this.generate_request(self);
     setTimeout(() => {
       self.$.ironScrollTheshold.clearTriggers();
     });
@@ -314,3 +327,4 @@ class MyView1 extends PolymerElement {
 }
 
 window.customElements.define('my-view1', MyView1);
+
