@@ -30,33 +30,30 @@ class MyView1 extends PolymerElement {
     super();
     this.deleteEntity = this.deleteEntity.bind(this);
     this.selectedArray=[];
+    this.employees=[];
     this.editIndex=undefined;
-    this.lastIndexUsed=-1;   
+     
   }
 
   static get properties() {
     return {
-      employee: { type: Array },
+      employee: { type: Array},
       add: {type: Boolean},
       selectedArray:{type:Array},
-      employees:{
-        type: Array
-      },
-      CurrentRecord:{type: Object}
-
+      employees:{type: Array},
+      CurrentRecord:{type: Object},
+      lastIndexUsed:{type: Number,
+                    value: -1}
     }
   }
   static get template() {
     return html`
       <style include="shared-styles">
-
         iron-list {
-          --iron-list-items-container: {
-             margin: auto;
-           };
            magin-bottom: 20px;
            background-color: light-grey;
            flex: 1 1 auto;
+           height: 500px;
          }
         
          #row, #header{
@@ -75,8 +72,7 @@ class MyView1 extends PolymerElement {
 
          #editBtn, #addBtn, #deleteBtn{
           height: 2em;          
-          margin:20px; 
-          
+          margin:20px;           
           background: -moz-linear-gradient(left, #e2e2e2 0%, #fefefe 100%); /* FF3.6-15 */
           background: -webkit-linear-gradient(left, #e2e2e2 0%,#fefefe 100%); /* Chrome10-25,Safari5.1-6 */
           background: linear-gradient(to right, #e2e2e2 0%,#fefefe 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
@@ -112,12 +108,8 @@ class MyView1 extends PolymerElement {
         }
 
       </style>
-      
-      
 
-
-      <div class="card">
-       
+      <div class="card">       
         <div class='heading'>
             <h1>Employee Database Table</h1>
             <div>
@@ -136,7 +128,7 @@ class MyView1 extends PolymerElement {
               <div class='col'></div>            
           </div>
         
-        <iron-scroll-threshold id="ironScrollTheshold" on-lower-threshold="loadMoreData">
+        <iron-scroll-threshold id="ironScrollTheshold" on-lower-threshold="loadMoreData" lower-threshold="50">
             <iron-list items="{{employees}}" as="item" scroll-target="ironScrollTheshold">
             <template>
               <div id='row'>
@@ -176,7 +168,7 @@ class MyView1 extends PolymerElement {
         <h2>Edit Employee Data</h2>
             <form >
                 <paper-dialog-scrollable>              
-                    <paper-input always-float-label label="ID" id ="editId"   value="{{CurrentRecord.id}}" readonly></paper-input>
+                    <paper-input always-float-label label="ID" id ="editId" value="{{CurrentRecord.id}}" readonly></paper-input>
                     <paper-input always-float-label label="Name" id="editName" placeholder="Enter Name"  value="{{CurrentRecord.name}}"></paper-input>
                     <paper-input always-float-label label="Department" id="editDepartment" placeholder="Enter Department"  value="{{CurrentRecord.department}}"></paper-input>
                     <paper-input always-float-label label="Salary" id="editSalary"  value="{{CurrentRecord.salary}}" auto-validate pattern="[0-9]*" error-message="Invalid Salary" placeholder="Enter Salary"></paper-input>
@@ -204,9 +196,7 @@ class MyView1 extends PolymerElement {
                 records.forEach(function(e) {
                   self.push('employees', e);
                 });
-                this.lastIndexUsed+=5;
-
-                 
+                this.lastIndexUsed+=5;           
       console.log(self.employees);
     })
   }
@@ -214,12 +204,8 @@ class MyView1 extends PolymerElement {
   loadMoreData(){
     console.log('lower threshold triggered');
     var self = this;
-    self.employees=[];   
     this.generate_request(self);
-    setTimeout(() => {
-      self.$.ironScrollTheshold.clearTriggers();
-    });
-
+    self.$.ironScrollTheshold.clearTriggers();
   }
 
   clearCheckboxes(){
@@ -277,9 +263,7 @@ class MyView1 extends PolymerElement {
       name: this.employees[this.editIndex].name,
       department: this.employees[this.editIndex].department,
       salary:this.employees[this.editIndex].salary
-    }
-    
-    
+    }  
   }
 
   editEmployee(event){        

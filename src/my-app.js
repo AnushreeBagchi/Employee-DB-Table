@@ -90,7 +90,7 @@ class MyApp extends PolymerElement {
         </app-drawer>
 
         <!-- Main content -->
-        <app-header-layout has-scrolling-region="">
+        <app-header-layout >
 
           <app-header slot="header" condenses="" reveals="" effects="waterfall">
             <app-toolbar>
